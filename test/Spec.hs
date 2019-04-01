@@ -1,2 +1,8 @@
+
+-- Testing Parsing
+
+import qualified JsontyperParser as JParser
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = do
+    putStrLn $ JParser.magicallyParseItAll "\"some sort of key\": \"a little value\""

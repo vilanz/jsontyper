@@ -1,9 +1,9 @@
 module Main where
 
-import System.Environment
+import qualified JsontyperParser   as JParser
+import qualified JsontyperTerminal as JTerm
 
 main :: IO ()
 main = do
-    [ filePath ] <- getArgs
-    rawJson <- readFile filePath
+    rawJson <- JTerm.readJsonFile
     putStrLn rawJson
