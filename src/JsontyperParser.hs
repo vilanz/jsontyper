@@ -1,6 +1,6 @@
 
 module JsontyperParser (
-    parseString,
+    parseJsonObject,
     magicallyParseItAll
 ) where
 
@@ -33,26 +33,40 @@ import Text.Parsec.Combinator
 import Text.Parsec.Error
 import Text.Parsec.Prim
 
-parseString :: Parser (String, String)
-parseString = do
-    char '\"'
-    k <- many (noneOf "\"")
-    char '\"'
-    char ':'
-    skipMany space
-    char '\"'
-    v <- many (noneOf "\"")
-    char '\"'
-    return (k, v)
-
-data JSONValue = JSONString String
-                | JSONNumber Int
-                | JSONObject (String, JSONValue)
-                | JSONArray [JSONValue]
+data JsonValue = JsonString String
+                | JsonNumber Int
+                | JsonObject [(String, JsonValue)]
+                | JsonArray [JsonValue]
                 deriving (Show, Eq)
 
+betweenMany :: Parser a -> Parser b -> Parser c -> Parser b
+betweenMany l val r = (l >> spaces) *> val <* (r >> spaces)
+
+parseJsonString :: Parser JsonValue
+parseJsonString = JsonString <$> betweenMany (string "\"") (many (noneOf "\":")) (string "\"")
+
+parseJsonArray :: Parser JsonValue
+parseJsonArray = JsonArray <$> betweenMany (string "[") values (string "]")  
+    where values = parseJson `sepBy` char ','
+
+
+parseJsonObject :: Parser JsonValue
+parseJsonObject = JsonObject <$> betweenMany (string "{") keyValues (string "}")
+    where
+        keyValues = kv `sepBy` char ','
+        kv = do
+            spaces
+            JsonString key <- parseJsonString
+            char ':'
+            spaces
+            val <- parseJson
+            return (key, val)
+
+parseJson :: Parser JsonValue
+parseJson = choice [parseJsonArray, parseJsonObject, parseJsonString]
+    
 magicallyParseItAll :: String -> String
-magicallyParseItAll input = case (parse parseString "(unknown)" input) of
-    Left e -> "parse error: " ++ show e
-    Right (k, v) -> "key: " ++ k ++ ", value: " ++ v
+magicallyParseItAll input = case (parse parseJson "" input) of
+    Left e -> "Parse error: " ++ show e
+    Right json -> show json
 
