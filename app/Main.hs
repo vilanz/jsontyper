@@ -1,9 +1,12 @@
 module Main where
 
-import qualified JsontyperParser   as JParser
-import qualified JsontyperTerminal as JTerm
+import qualified JsontyperParser as JParser
 
 main :: IO ()
 main = do
-    rawJson <- JTerm.readJsonFile
-    putStrLn rawJson
+    putStrLn $ "Insert JSON to convert (if nothing is inputted, a sample JSON is used)"
+    jsonInput <- getLine
+    let rawJson = if jsonInput == ""
+        then "{ \"key1\": \"str1\", \"key2\": { \"arr1\": [ 1, 2, 3 ] } }"
+        else jsonInput
+    putStrLn $ JParser.parseJson rawJson

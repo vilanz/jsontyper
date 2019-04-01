@@ -1,8 +1,12 @@
 
 -- Testing Parsing
 
-import qualified JsontyperParser as JParser
+import JsontyperParser
+import Test.Hspec
 
 main :: IO ()
-main = do
-    putStrLn $ JParser.magicallyParseItAll "{ \"key1\": \"str1\", \"key2\": { \"arr1\": [ 1, 2, 3 ] } }"
+main = hspec $ do
+  describe "Jsontyper" $ do
+
+    it "parses a simple key-value JSON" $ do
+        parseJson "{ \"sampleKey\": \"sampleValue\" }" `shouldBe` JsonObject [("sampleKey", JsonString "samplevalue")]

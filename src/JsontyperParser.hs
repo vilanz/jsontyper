@@ -1,7 +1,7 @@
 
 module JsontyperParser (
-    parseJsonObject,
-    magicallyParseItAll
+    JsonValue (..),
+    parseJson,
 ) where
 
 {- 
@@ -54,7 +54,7 @@ parseJsonString = JsonString <$> betweenMany (string "\"") (many (noneOf "\":"))
 
 parseJsonArray :: Parser JsonValue
 parseJsonArray = JsonArray <$> betweenMany (string "[") values (string "]")  
-    where values = parseJson `sepBy` char ','
+    where values = parseJsonValue `sepBy` char ','
 
 parseJsonObject :: Parser JsonValue
 parseJsonObject = JsonObject <$> betweenMany (string "{") keyValues (string "}")
@@ -66,14 +66,14 @@ parseJsonObject = JsonObject <$> betweenMany (string "{") keyValues (string "}")
             JsonString key <- parseJsonString
             char ':'
             spaces
-            val <- parseJson
+            val <- parseJsonValue
             return (key, val)
 
-parseJson :: Parser JsonValue
-parseJson = choice [parseJsonArray, parseJsonObject, parseJsonString, parseJsonNumber]
+parseJsonValue :: Parser JsonValue
+parseJsonValue = choice [parseJsonArray, parseJsonObject, parseJsonString, parseJsonNumber]
     
-magicallyParseItAll :: String -> String
-magicallyParseItAll input = case (parse parseJson "" input) of
+parseJson :: String -> String
+parseJson input = case (parse parseJsonValue "" input) of
     Left e -> "Parse error: " ++ show e
     Right json -> show json
 
